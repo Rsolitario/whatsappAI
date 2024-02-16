@@ -11,8 +11,20 @@ from unicodedata import normalize
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 
+import yaml
+# Importamos el paquete recien instalado
+import google.generativeai as genai
+
 filepath = './resource\whatsapp_session.txt'
 driver = webdriver
+
+yaml_file = open("config.yaml", 'r')
+yaml_content = yaml.load(yaml_file, Loader=yaml.FullLoader)
+GOOGLE_API_KEY = yaml_content.get("api_key")
+
+# AI google
+genai.configure(api_key=GOOGLE_API_KEY)
+model = genai.GenerativeModel("gemini-pro")
 
 def crear_driver_session_v2():
     options = Options()
@@ -129,23 +141,9 @@ def identificar_mensaje():
 def preparar_respuesta(message :str):
     print("PREPARANDO RESPUESTA")
 
-    if message.__contains__("QUE ES STRANGECODE"):
-        response = "StrangeCode es una comunidad de informaticos que les apasiona aprender y compartir conocimiento :-D \n" \
-                        "Puedes visitar nuestra pagina web: https://strange-code.github.io/Links \n"
-    elif message.__contains__("CUAL ES SU CANAL DE YOUTUBE"):
-        response = "Puedes visitarnos en: https://www.youtube.com/channel/UCl24Q__MfUNDMhNWBluHcTg \n"
-    elif message.__contains__("QUIERO UNIRME A LA COMUNIDAD"):
-        response = "Puedes unirte a la comunidad ingresando al siguiente link: https://discord.com/invite/26ptv6URXY \n"
-    elif message.__contains__("QUE PUEDES HACER"):
-        text1 = open("./resource/respuesta1.txt", mode='r', encoding='utf-8')
-        response = text1.readlines()
-        text1.close()
-    elif message.__contains__("GRACIAS"):
-        response = "Ha sido un place ayudarte ;-)  \n"
-    else:        
-        response = "Hola, soy a Eva un bot creado por StrangeCode, preguntame ¿Qué puedo hacer? :-D \n"
-
-    return response
+    response = model.generate_content(message)
+    print("*** Respuesta: {response.text} ***")
+    return response.text
 
 def procesar_mensaje(message :str):
     chatbox = driver.find_element(By.XPATH, "/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]")
